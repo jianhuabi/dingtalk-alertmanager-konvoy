@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-webhook-dingtalk-config
+  namespace: kubeaddons
+data:
+  config.yml: |
+    targets:
+      webhook1:
+        url: https://oapi.dingtalk.com/robot/send?access_token=xxxxxxx
+        # secret for signature
+        secret: SEC09xxxxxxx
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: prometheus-webhook-dingtalk
+  name: prometheus-webhook-dingtalk
+  namespace: kubeaddons
+spec:
+  ports:
+  - port: 8060
+    protocol: TCP
+  selector:
+    app: prometheus-webhook-dingtalk
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: prometheus-webhook-dingtalk
+  name: prometheus-webhook-dingtalk
+  namespace: kubeaddons
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-webhook-dingtalk
+  template:
+    metadata:
+      labels:
+        app: prometheus-webhook-dingtalk
+    spec:
+      containers:
+      - image: ccr.ccs.tencentyun.com/d2iq/prometheus-webhook-dingtalk:v1.4.0
+        name: prometheus-webhook-dingtalk
+        args:
+        - "--config.file=/dingtalk-config/config.yml"
+        - "--web.listen-address=:8060"
+        ports:
+        - containerPort: 8060
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        volumeMounts:
+        - name: conf
+          mountPath: /dingtalk-config
+          readOnly: true
+      volumes:
+      - name: conf
+        configMap:
+          name: prometheus-webhook-dingtalk-config
+          defaultMode: 0755
+      imagePullSecrets:
+        - name: IfNotPresent

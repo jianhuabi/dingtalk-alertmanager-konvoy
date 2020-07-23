@@ -1,0 +1,25 @@
+{{ define "__titlelink" }}
+{{ .ExternalURL }}/#/alerts?receiver={{ .Receiver }}
+{{ end }}
+
+{{ define "__title" }}
+[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .GroupLabels.SortedPairs.Values | join " " }}
+{{ end }}
+
+{{ define "__text" }}
+{{ range .Alerts }}
+{{ range .Labels.SortedPairs }}*{{ .Name }}*: `{{ .Value }}`
+{{ end }} {{ range .Annotations.SortedPairs }}*{{ .Name }}*: {{ .Value }}
+{{ end }} *source*: {{ .GeneratorURL }}
+{{ end }}
+{{ end }}
+
+{{ define "slack.default.title" }}{{ template "__title" . }}{{ end }}
+{{ define "slack.default.username" }}{{ template "__alertmanager" . }}{{ end }}
+{{ define "slack.default.fallback" }}{{ template "slack.default.title" . }} | {{ template "slack.default.titlelink" . }}{{ end }}
+{{ define "slack.default.pretext" }}{{ end }}
+{{ define "slack.default.titlelink" }}{{ template "__titlelink" . }}{{ end }}
+{{ define "slack.default.iconemoji" }}{{ end }}
+{{ define "slack.default.iconurl" }}{{ end }}
+{{ define "slack.default.text" }}{{ template "__text" . }}{{ end }}
+
