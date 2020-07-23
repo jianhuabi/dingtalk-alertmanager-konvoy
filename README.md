@@ -2,7 +2,13 @@
 
 ## Step 1 -- request dingtalk chatbot credential
 
+https://blog.csdn.net/knight_zhou/article/details/105583741
+
 ## Step 2 -- deploy dingtalk altermanager webhook proxy
+
+```
+kubectl apply -f dingtalk-webhook.yaml
+```
 
 ## Step 3 -- run below kubectl command
 
